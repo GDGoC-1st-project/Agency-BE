@@ -26,3 +26,6 @@ bin/
 ### Env ###
 *.env
 .env
+
+# 배포용 환경변수
+.env.prod
