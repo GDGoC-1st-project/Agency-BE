@@ -13,7 +13,9 @@ import org.springframework.http.HttpStatus;
 @Schema(description = "공통 응답 포맷")
 public class CustomResponse<T> {
 
+    // Jackson 3은 Lombok getter isSuccess()를 "success"로 따로 읽으므로 getter에도 같은 이름을 붙입니다
     @JsonProperty("isSuccess")
+    @Getter(onMethod_ = @JsonProperty("isSuccess"))
     @Schema(description = "요청 성공 여부", example = "true")
     private final boolean isSuccess;
 

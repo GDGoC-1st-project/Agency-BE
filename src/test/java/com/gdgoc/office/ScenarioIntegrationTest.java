@@ -9,8 +9,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.gdgoc.office.domain.auth.entity.InviteCode;
 import com.gdgoc.office.domain.auth.repository.InviteCodeRepository;
 import com.gdgoc.office.domain.keyword.entity.Keyword;
@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -364,7 +364,7 @@ class ScenarioIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString());
         int count = 0;
-        Iterator<JsonNode> paths = docs.get("paths").elements();
+        Iterator<JsonNode> paths = docs.get("paths").values().iterator();
         while (paths.hasNext()) {
             JsonNode pathItem = paths.next();
             for (String method : new String[]{"get", "post", "put", "patch", "delete"}) {

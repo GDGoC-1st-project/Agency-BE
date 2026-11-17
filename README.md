@@ -4,8 +4,8 @@ GDGoC 동아리원이 키워드(할 수 있어요 / 배우고 있어요 / 관심
 
 ### ⚙️ 기술 스택
 - Java 17
-- Spring Boot 3.5.16 (Web, Data JPA, Security, Validation, WebSocket)
-- MySQL 8, JWT(jjwt 0.12), springdoc-openapi 2.8, Lombok
+- Spring Boot 4.1.0 (WebMVC, Data JPA, Security, Validation, WebSocket), Jackson 3
+- MySQL 8, JWT(jjwt 0.12), springdoc-openapi 3.1, Lombok
 - Gradle 8.14 (Wrapper 포함)
 
 ### ▶️ 실행 방법
@@ -36,6 +36,19 @@ GDGoC 동아리원이 키워드(할 수 있어요 / 배우고 있어요 / 관심
 - `ws://localhost:8080/ws/chatrooms/{chatRoomId}?token={accessToken}` (또는 `Authorization: Bearer` 헤더)
 - 해당 채팅방 참여자만 연결할 수 있고, 서버 → 클라이언트 수신 전용입니다. 메시지 전송은 REST(`POST /api/v1/chatrooms/{chatRoomId}/messages`)로 합니다.
 - 이벤트: `{"event":"message.new","data":{...메시지}}`, `{"event":"message.read","data":{"lastReadMessageId":10}}`
+
+### 🚀 배포 (Docker)
+- `Dockerfile`: `prod` 프로필로 실행되는 이미지 (`docker build -t agency-be .`)
+- `docker-compose.prod.yml`: 서버에서 MySQL + 백엔드를 함께 띄움
+  ```bash
+  cp .env.prod.example .env.prod   # 값 채우기 (.env.prod는 커밋 금지, .gitignore에 있음)
+  docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+  ```
+- `prod` 프로필(`application-prod.yml`) 필수 환경변수: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `ADMIN_PASSWORD`, `CORS_ALLOWED_ORIGIN_PATTERNS`
+  - 테이블은 `ddl-auto: update`로 첫 기동 때 생성됩니다 (`DDL_AUTO`로 변경 가능).
+  - 운영진 계정·초대 코드·기본 키워드 시드가 `prod`에서도 실행됩니다 (있으면 건너뜀).
+  - `CORS_ALLOWED_ORIGIN_PATTERNS`에 프론트 주소(Vercel 도메인 등)를 넣어야 REST와 WebSocket이 모두 통과합니다.
+- 프론트가 `https`이므로 백엔드도 `https`/`wss`로 열어야 합니다 (ALB·Nginx 등에서 TLS 종료, WebSocket Upgrade 헤더 전달).
 
 ### ✅ 테스트
 ```bash
