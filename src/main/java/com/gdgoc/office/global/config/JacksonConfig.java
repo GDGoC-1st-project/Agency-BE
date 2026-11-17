@@ -1,11 +1,13 @@
 package com.gdgoc.office.global.config;
 
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tools.jackson.databind.ext.javatime.deser.LocalDateTimeDeserializer;
+import tools.jackson.databind.ext.javatime.ser.LocalDateTimeSerializer;
+import tools.jackson.databind.module.SimpleModule;
 
 @Configuration
 public class JacksonConfig {
@@ -14,9 +16,10 @@ public class JacksonConfig {
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     @Bean
-    public Jackson2ObjectMapperBuilderCustomizer localDateTimeCustomizer() {
-        return builder -> builder
-                .serializers(new LocalDateTimeSerializer(DATE_TIME_FORMATTER))
-                .deserializers(new LocalDateTimeDeserializer(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+    public JsonMapperBuilderCustomizer localDateTimeCustomizer() {
+        SimpleModule module = new SimpleModule("LocalDateTimeFormat")
+                .addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DATE_TIME_FORMATTER))
+                .addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        return builder -> builder.addModule(module);
     }
 }

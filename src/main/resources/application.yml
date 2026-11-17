@@ -14,8 +14,7 @@ spring:
         default_batch_fetch_size: 100
   jackson:
     time-zone: Asia/Seoul
-    serialization:
-      write-dates-as-timestamps: false
+    # Jackson 3은 날짜를 기본으로 숫자 타임스탬프가 아닌 문자열로 씁니다 (형식은 JacksonConfig)
 jwt:
   secret: ${JWT_SECRET}
   access-expiration-minutes: 30

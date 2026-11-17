@@ -1,0 +1,21 @@
+# 배포용 프로필: SPRING_PROFILES_ACTIVE=prod
+# 필수 환경변수: DB_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET(32바이트 이상), ADMIN_PASSWORD, CORS_ALLOWED_ORIGIN_PATTERNS
+server:
+  port: ${PORT:8080}
+  # 리버스 프록시(로드밸런서) 뒤에서 X-Forwarded-* 헤더를 따름
+  forward-headers-strategy: framework
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      # 마이그레이션 도구가 없어서 첫 배포 때 테이블을 만들도록 update. 스키마가 안정되면 DDL_AUTO=validate 로 바꿀 수 있음
+      ddl-auto: ${DDL_AUTO:update}
+    show-sql: false
+app:
+  seed:
+    admin-login-id: ${ADMIN_LOGIN_ID:admin}
+    admin-password: ${ADMIN_PASSWORD}
+    admin-name: 운영진

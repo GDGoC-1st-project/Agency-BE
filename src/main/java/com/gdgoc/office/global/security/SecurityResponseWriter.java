@@ -1,6 +1,6 @@
 package com.gdgoc.office.global.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.gdgoc.office.global.common.CustomResponse;
 import com.gdgoc.office.global.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletResponse;

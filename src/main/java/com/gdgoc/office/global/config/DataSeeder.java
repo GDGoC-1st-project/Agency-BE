@@ -18,10 +18,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/** 로컬 프로필 시드 데이터 (§9). 이미 있는 데이터는 건너뛴다. */
+/** 시드 데이터 (§9): 운영진 계정·초대 코드·기본 키워드. local·prod 프로필에서 실행하며 이미 있는 데이터는 건너뛴다. */
 @Slf4j
 @Component
-@Profile("local")
+@Profile({"local", "prod"})
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 

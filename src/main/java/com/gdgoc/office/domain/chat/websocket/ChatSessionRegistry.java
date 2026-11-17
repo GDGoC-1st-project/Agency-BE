@@ -1,7 +1,7 @@
 package com.gdgoc.office.domain.chat.websocket;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -44,7 +44,7 @@ public class ChatSessionRegistry {
         String payload;
         try {
             payload = objectMapper.writeValueAsString(Map.of("event", event, "data", data));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.error("WebSocket 이벤트 직렬화 실패", e);
             return;
         }
