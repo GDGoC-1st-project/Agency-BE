@@ -59,6 +59,8 @@ GitHub 저장소를 Railway 서비스에 연결하면 `main`에 푸시될 때마
 
 - `${{MySQL.…}}`은 같은 프로젝트의 MySQL 서비스 값을 참조하는 Railway 문법입니다 (서비스 이름이 `MySQL`일 때).
 - 이미지는 `SPRING_PROFILES_ACTIVE=prod`로 실행되므로 `local` 프로필의 개발용 DB·JWT 키·시드 설정은 쓰이지 않습니다.
+- `prod` 프로필(`application-prod.yml`)은 DB 접속 정보를 `SPRING_DATASOURCE_URL`·`SPRING_DATASOURCE_USERNAME`·`SPRING_DATASOURCE_PASSWORD`에서 읽습니다. 이 셋이나 `JWT_SECRET`이 비어 있으면 기동할 때 `prod 프로필 필수 환경변수가 없습니다: …` 에러에 빠진 이름이 나옵니다.
+- Variables는 **MySQL 서비스가 아니라 백엔드 서비스**에 넣고, 바꾼 뒤에는 Railway 화면의 **Deploy**를 눌러 반영합니다.
 - 운영진 계정은 처음 한 번만 만들어집니다. 이후 `ADMIN_PASSWORD`를 바꿔도 기존 계정의 비밀번호는 바뀌지 않습니다.
 - 초대 코드 `GDGOC-INVITE-01`~`05`는 코드에 공개돼 있으니 운영에서는 필요하면 DB에서 바꿔 주세요.
 

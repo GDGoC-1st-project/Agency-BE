@@ -1,0 +1,15 @@
+# 배포(prod) 프로필. Dockerfile이 SPRING_PROFILES_ACTIVE=prod로 실행합니다.
+# DB 접속 정보는 아래 환경변수에서 읽습니다. 값이 없으면 기동할 때
+# "Could not resolve placeholder 'SPRING_DATASOURCE_URL'"처럼 빠진 변수 이름이 에러에 나옵니다.
+spring:
+  datasource:
+    # JDBC 형식이어야 함: jdbc:mysql://호스트:포트/DB이름?...  (Railway의 MYSQL_URL "mysql://..."는 그대로 쓸 수 없음)
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      # 첫 배포는 update로 테이블 생성, 안정되면 validate
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
+    show-sql: false
