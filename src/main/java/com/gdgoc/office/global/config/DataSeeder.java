@@ -13,15 +13,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/** 시드 데이터 (§9): 운영진 계정·초대 코드·기본 키워드. local·prod 프로필에서 실행하며 이미 있는 데이터는 건너뛴다. */
+/**
+ * 시드 데이터 (§9): 운영진 계정·초대 코드·기본 키워드. 이미 있는 데이터는 건너뛴다.
+ * app.seed.enabled=true 일 때만 실행한다 (local 프로필은 항상 true, 그 외에는 환경변수 APP_SEED_ENABLED=true).
+ */
 @Slf4j
 @Component
-@Profile({"local", "prod"})
+@ConditionalOnProperty(prefix = "app.seed", name = "enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
@@ -55,6 +58,9 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
+        if (adminPassword == null || adminPassword.isBlank()) {
+            throw new IllegalStateException("시드가 켜져 있으면 운영진 비밀번호(ADMIN_PASSWORD)가 필요합니다.");
+        }
         if (!userRepository.existsByLoginId(adminLoginId)) {
             userRepository.save(User.createAdmin(adminLoginId, passwordEncoder.encode(adminPassword), adminName));
             log.info("[seed] 운영진 계정 생성: {}", adminLoginId);
