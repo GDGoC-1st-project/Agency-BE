@@ -24,10 +24,10 @@ GDGoC 동아리원이 키워드(할 수 있어요 / 배우고 있어요 / 관심
 3. Swagger UI: http://localhost:8080/swagger-ui/index.html
    - 로그인 API로 받은 `accessToken`을 우측 상단 **Authorize**에 넣으면 인증이 필요한 API를 호출할 수 있습니다.
 
-환경변수 예시는 [.env.example](.env.example)에 있습니다 (`DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `ADMIN_PASSWORD`). `local` 외 프로필에서는 `JWT_SECRET`(32바이트 이상)이 필수이고 `ddl-auto`는 `validate`입니다.
+로컬 환경변수 예시는 [.env.example](.env.example)에 있습니다 (`DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `ADMIN_PASSWORD`). `local` 외 프로필에서는 `JWT_SECRET`(32바이트 이상)이 필수이고 `ddl-auto`는 `validate`입니다. 배포 환경변수는 아래 "배포 (Railway)"를 보세요.
 
 ### 🌱 로컬 시드 데이터
-`local` 프로필로 기동하면 아래 데이터가 없을 때만 자동으로 들어갑니다.
+`local` 프로필로 기동하면 아래 데이터가 없을 때만 자동으로 들어갑니다. 다른 프로필(배포)에서는 `APP_SEED_ENABLED=true`일 때만 들어갑니다.
 - 운영진 계정: `admin` / `admin1234!` (`ADMIN_PASSWORD`로 변경 가능)
 - 초대 코드: `GDGOC-INVITE-01` ~ `GDGOC-INVITE-05`
 - 기본 키워드 31개 (Backend, Spring, AI, 커피 등)
@@ -37,18 +37,30 @@ GDGoC 동아리원이 키워드(할 수 있어요 / 배우고 있어요 / 관심
 - 해당 채팅방 참여자만 연결할 수 있고, 서버 → 클라이언트 수신 전용입니다. 메시지 전송은 REST(`POST /api/v1/chatrooms/{chatRoomId}/messages`)로 합니다.
 - 이벤트: `{"event":"message.new","data":{...메시지}}`, `{"event":"message.read","data":{"lastReadMessageId":10}}`
 
-### 🚀 배포 (Docker)
-- `Dockerfile`: `prod` 프로필로 실행되는 이미지 (`docker build -t agency-be .`)
-- `docker-compose.prod.yml`: 서버에서 MySQL + 백엔드를 함께 띄움
-  ```bash
-  cp .env.prod.example .env.prod   # 값 채우기 (.env.prod는 커밋 금지, .gitignore에 있음)
-  docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
-  ```
-- `prod` 프로필(`application-prod.yml`) 필수 환경변수: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `ADMIN_PASSWORD`, `CORS_ALLOWED_ORIGIN_PATTERNS`
-  - 테이블은 `ddl-auto: update`로 첫 기동 때 생성됩니다 (`DDL_AUTO`로 변경 가능).
-  - 운영진 계정·초대 코드·기본 키워드 시드가 `prod`에서도 실행됩니다 (있으면 건너뜀).
-  - `CORS_ALLOWED_ORIGIN_PATTERNS`에 프론트 주소(Vercel 도메인 등)를 넣어야 REST와 WebSocket이 모두 통과합니다.
-- 프론트가 `https`이므로 백엔드도 `https`/`wss`로 열어야 합니다 (ALB·Nginx 등에서 TLS 종료, WebSocket Upgrade 헤더 전달).
+### 🚀 배포 (Railway)
+GitHub 저장소를 Railway 서비스에 연결하면 `main`에 푸시될 때마다 루트의 `Dockerfile`로 빌드해 자동 배포합니다.
+
+1. Railway 프로젝트에 **MySQL** 서비스를 추가하고, **GitHub Repo**로 이 저장소를 연결합니다.
+2. 백엔드 서비스의 **Variables**에 아래 환경변수를 넣습니다.
+3. **Settings → Networking → Generate Domain**으로 `https://…up.railway.app` 주소를 만듭니다. 프론트의 `NEXT_PUBLIC_API_URL`에 이 주소를 넣습니다 (WebSocket은 자동으로 `wss://`).
+
+| 변수 | 필수 | 설명 | 예시 |
+| --- | --- | --- | --- |
+| `SPRING_DATASOURCE_URL` | ✅ | MySQL JDBC 주소 | `jdbc:mysql://${{MySQL.MYSQLHOST}}:${{MySQL.MYSQLPORT}}/${{MySQL.MYSQLDATABASE}}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8` |
+| `SPRING_DATASOURCE_USERNAME` | ✅ | DB 계정 | `${{MySQL.MYSQLUSER}}` |
+| `SPRING_DATASOURCE_PASSWORD` | ✅ | DB 비밀번호 | `${{MySQL.MYSQLPASSWORD}}` |
+| `SPRING_JPA_HIBERNATE_DDL_AUTO` | 첫 배포 ✅ | 테이블 생성 방식. 기본값 `validate`는 테이블이 없으면 기동 실패 | 첫 배포 `update` → 스키마가 안정되면 `validate` |
+| `JWT_SECRET` | ✅ | JWT 서명 키, **32바이트 이상** 임의 문자열 | `openssl rand -base64 48` 결과 |
+| `CORS_ALLOWED_ORIGINS` | ✅ | 프론트 주소, 쉼표 구분. REST와 WebSocket(`/ws/**`)에 함께 적용. `*` 패턴 가능 | `https://agency.vercel.app,https://*.vercel.app` |
+| `APP_SEED_ENABLED` | | `true`면 기동할 때 운영진 계정·초대 코드·기본 키워드를 넣음 (이미 있으면 건너뜀). 기본 `false` | 첫 배포 `true` |
+| `ADMIN_PASSWORD` | 시드 켤 때 ✅ | 시드로 만드는 운영진 계정 비밀번호. 비어 있으면 기동 실패 | 임의의 강한 비밀번호 |
+| `ADMIN_LOGIN_ID` | | 운영진 아이디 (기본 `admin`) | `admin` |
+| `PORT` | | Railway가 자동으로 넣음 (기본 8080) | |
+
+- `${{MySQL.…}}`은 같은 프로젝트의 MySQL 서비스 값을 참조하는 Railway 문법입니다 (서비스 이름이 `MySQL`일 때).
+- 이미지는 `SPRING_PROFILES_ACTIVE=prod`로 실행되므로 `local` 프로필의 개발용 DB·JWT 키·시드 설정은 쓰이지 않습니다.
+- 운영진 계정은 처음 한 번만 만들어집니다. 이후 `ADMIN_PASSWORD`를 바꿔도 기존 계정의 비밀번호는 바뀌지 않습니다.
+- 초대 코드 `GDGOC-INVITE-01`~`05`는 코드에 공개돼 있으니 운영에서는 필요하면 DB에서 바꿔 주세요.
 
 ### ✅ 테스트
 ```bash
